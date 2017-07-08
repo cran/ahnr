@@ -1,0 +1,17 @@
+1d617f631446109d3f7d25a2376b1ddc *DESCRIPTION
+84dcc94da3adb52b53ae4fa38fe49e5d *LICENSE
+9fb0a57934cbc329e0f2333a60fcacd2 *NAMESPACE
+940109c4825e18035f23f91ec00d6cea *NEWS.md
+ee8ba36a8e3d11f829691513225e23c1 *R/ahn_main.R
+1c5af9f533425b18933bd675a0af1dcd *R/auxiliary.R
+7bebd10d6de69fc4e0f070d98c7769ff *R/imports.R
+ffc4084790ba8748c3ca14b728a19c4a *README.md
+d6cdd0bbc678ef11d2e8a73bd85da155 *build/vignette.rds
+296179f24e8d1c002dd0225d2752307e *inst/doc/ahn.R
+3703ef5745c1dc0603cfa728d5d68feb *inst/doc/ahn.Rmd
+1fff9be4b4bd6cf0b4a88e747d93d884 *inst/doc/ahn.html
+18afcbdf4f1779f887f133c102454d53 *man/AHNnD.Rd
+5e44ad4e347a0504efbd30df9157a93e *man/SimAHNnD.Rd
+6ab26fff0c920d06002449179cca4898 *man/plot.ahn.Rd
+6e6b5e7ed1aa0731200361255f4e528d *man/summary.ahn.Rd
+3703ef5745c1dc0603cfa728d5d68feb *vignettes/ahn.Rmd

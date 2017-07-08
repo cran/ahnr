@@ -1,0 +1,96 @@
+---
+title: "Artificial Hydrocarbon Networks in R"
+author: "Jose Roberto Ayala Solares"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ahnr_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+`ahnr` is a package that implements the artificial hydrocarbon networks developed by [Hiram Ponce](http://www.up.edu.mx/es/investigador/25611/hiram-eredin-ponce-espinosa-dr). Most of the work is based on the book [Artificial Organic Networks](http://www.springer.com/gb/book/9783319024714).
+
+## Quick Start
+
+Here are some quick examples to get you started.
+
+## Create a network for a SISO sytem
+
+The following code let's you create the data to train an artificial hydrocarbon network.
+
+```{r Example 1 Training}
+library(ahnr)
+
+# Create data
+set.seed(12321)
+x <- 2 * runif(1000) - 1;
+x <- sort(x)
+
+y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) + 
+    (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) + 
+    (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
+
+plot(x, y, type = 'l')
+
+# Create the Sigma dataset
+Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
+
+# Create network
+ahn <- AHNnD(Sigma, 5, 0.01, 500)
+```
+
+The trained network can be used to visualize its performance.
+
+```{r Example 1 Simulation}
+# Create test data
+X <- data.frame(x = x)
+
+# Simulate
+ysim <- SimAHNnD(ahn, X)
+
+plot(x, y, type = 'l')
+lines(x, ysim, type = 'l', col = 'red')
+```
+
+A summary of the network can be obtained with the `summary` command.
+
+```{r Example 1 Summary}
+summary(ahn)
+```
+
+Finally, the network itself can be plotted with the `plot` command. The text of the carbon of the first molecule is in red.
+
+```{r Example 1 Network Visualization}
+plot(ahn)
+```
+
+
+## Create a network for a MISO sytem
+
+```{r Example 2 Training and Simulation}
+# Create data
+t <- seq(0, 15, 0.01)
+X <- data.frame(x1 = cos(t), x2 = t)
+Y <- data.frame(y = sin(t))
+
+# Create the Sigma dataset
+Sigma <- list(X = X, Y = Y)
+
+# Create network
+ahn <- AHNnD(Sigma, 5, 0.01, 500)
+
+# Simulate
+ysim <- SimAHNnD(ahn, X)
+
+plot(seq_along(Y$y), Y$y, type = 'l', col = 'black')
+lines(seq_along(ysim), ysim, col = 'red')
+```
+
+```{r Example 2 Summary}
+summary(ahn)
+```
+
+```{r Example 2 Network Visualization}
+plot(ahn)
+```
