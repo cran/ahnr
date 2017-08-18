@@ -6,7 +6,7 @@ set.seed(12321)
 x <- 2 * runif(1000) - 1;
 x <- sort(x)
 
-y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) + 
+y <- (x < 0.1) * (0.05 * runif(1000) + atan(pi*x)) + 
     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) + 
     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
 
@@ -16,7 +16,7 @@ plot(x, y, type = 'l')
 Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
 
 # Create network
-ahn <- AHNnD(Sigma, 5, 0.01, 500)
+ahn <- AHNnD(Sigma, 5, 0.01, 100)
 
 ## ----Example 1 Simulation------------------------------------------------
 # Create test data
@@ -27,6 +27,7 @@ ysim <- SimAHNnD(ahn, X)
 
 plot(x, y, type = 'l')
 lines(x, ysim, type = 'l', col = 'red')
+legend(-1, 1, c('Original', 'Simulation'), col = c(1,2), lty = c(1,3), cex = 0.8)
 
 ## ----Example 1 Summary---------------------------------------------------
 summary(ahn)
@@ -36,6 +37,7 @@ plot(ahn)
 
 ## ----Example 2 Training and Simulation-----------------------------------
 # Create data
+set.seed(12321)
 t <- seq(0, 15, 0.01)
 X <- data.frame(x1 = cos(t), x2 = t)
 Y <- data.frame(y = sin(t))
@@ -44,13 +46,14 @@ Y <- data.frame(y = sin(t))
 Sigma <- list(X = X, Y = Y)
 
 # Create network
-ahn <- AHNnD(Sigma, 5, 0.01, 500)
+ahn <- AHNnD(Sigma, 5, 0.01, 100)
 
 # Simulate
 ysim <- SimAHNnD(ahn, X)
 
-plot(seq_along(Y$y), Y$y, type = 'l', col = 'black')
-lines(seq_along(ysim), ysim, col = 'red')
+plot(t, Y$y, type = 'l', col = 'black', xlab = 't', ylab = 'output')
+lines(t, ysim, col = 'red')
+legend(0, -0.5, c('Original', 'Simulation'), col = c(1,2), lty = c(1,3), cex = 0.6)
 
 ## ----Example 2 Summary---------------------------------------------------
 summary(ahn)
