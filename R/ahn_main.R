@@ -1,4 +1,4 @@
-#' AHNnD
+#' fit
 #'
 #' @description Function to train an Artificial Hydrocarbon Network (AHN).
 #'
@@ -31,9 +31,34 @@
 #' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
 #'
 #' # Train AHN
-#' ahn <- AHNnD(Sigma, 5, 0.01, 500)
+#' ahn <- fit(Sigma, 5, 0.01, 500)
 #'
-AHNnD <- function(Sigma, n, eta, maxIter = 2000) {
+fit <- function(Sigma, n, eta, maxIter = 2000) {
+    # Security Checking
+    if (length(Sigma) != 2) {
+        stop("Sigma must be a list with 2 data frames: one for the predictors and one for the outcome variables. ", call. = FALSE)
+    }
+
+    if (!is.data.frame(Sigma$X)) {
+        stop("The first component of Sigma must be a data frame with the predictor variables. ", call. = FALSE)
+    }
+
+    if (!is.data.frame(Sigma$Y)) {
+        stop("The second component of Sigma must be a data frame with the outcome variables. ", call. = FALSE)
+    }
+
+    if (n < 1) {
+        stop("At least two particles are required.", call. = FALSE)
+    }
+
+    if ((eta <= 0) | (eta >= 1)) {
+        stop("The learning rate eta must be between 0 and 1 (exclusive).", call. = FALSE)
+    }
+
+    if (maxIter < 1) {
+        stop("Maximum number of iterations must be a positive integer.", call. = FALSE)
+    }
+
     maxIter <- maxIter
     iter <- 1
 
@@ -132,155 +157,63 @@ AHNnD <- function(Sigma, n, eta, maxIter = 2000) {
 }
 
 
-#' SimAHNnD
+#' Checks if argument is a \code{ahn} object
 #'
-#' @description Function to simulate a trained Artificial Hydrocarbon Network.
+#' @param x An \R object
 #'
-#' @param ahn an object of class "\code{ahn}" produced from the \link{AHNnD} function.
-#' @param X data frame with the inputs X to be predicted.
-#'
-#' @return predicted output values for inputs X.
 #' @export
 #'
-#' @examples
-#' # Create data
-#' x <- 2 * runif(1000) - 1;
-#' x <- sort(x)
-#'
-#' y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) +
-#'     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) +
-#'     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
-#'
-#' # Create Sigma list
-#' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
-#'
-#' # Train AHN
-#' ahn <- AHNnD(Sigma, 5, 0.01, 500)
-#'
-#' # Test AHN
-#' X <- data.frame(x = x)
-#' ysim <- SimAHNnD(ahn, X)
-#'
-SimAHNnD <- function(ahn, X) {
-    # Extract network components
-    H <- ahn$network$H
-    posMolecules <- ahn$network$Pi
-    C <- ahn$network$C
-
-    # Initial statemets
-    Yapprox <- matrix(0, nrow = nrow(X), ncol = ncol(H[[1]]))
-    indexes <- rep(0, nrow(X))
-
-    # Distribute data over molecules
-    molecules <- SimDataInMolecules(X, posMolecules)
-
-    # Evaluate AHN-model
-    pointer <- 1
-
-    for (i in seq_len(length(molecules$X))) {
-        Xi <- molecules$X[[i]]
-        indexesi <- molecules$Index[[i]]
-
-        ki <- C$Omega[i]
-        Phi <- CH_X(Xi, ki)
-        Ym <- Phi %*% H[[i]]
-
-        pointerNew <- pointer + nrow(Ym)
-        Yapprox[pointer:(pointerNew-1), ] <- Ym#[seq_len(nrow(Ym)), ]
-        indexes[pointer:(pointerNew-1)] <- indexesi
-        pointer <- pointerNew
-    }
-
-    # Sort data
-    ix <- sort(indexes, index.return = TRUE)$ix;
-    Y <- Yapprox[ix, ]
-}
+is.ahn <- function(x) inherits(x, "ahn")
 
 
-#' #' plotAHN
-#' #'
-#' #' @param ahn a list produced from the \link{AHNnD} function.
-#' #'
-#' #' @return visualization of the AHN.
-#' #' @export
-#' #'
-#' #' @examples
-#' #' # Create data
-#' #' x <- 2 * runif(1000) - 1;
-#' #' x <- sort(x)
-#' #'
-#' #' y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) +
-#' #'     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) +
-#' #'     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
-#' #'
-#' #' # Create Sigma list
-#' #' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
-#' #'
-#' #' # Train AHN
-#' #' ahn <- AHNnD(Sigma, 5, 0.01, 500)
-#' #'
-#' #' # Plot AHN
-#' #' plotAHN(ahn)
-#' #'
-#' plotAHN <- function(ahn) {
-#'     vis <- CreateNodesEdges(ahn)
-#'     graph <- igraph::graph_from_data_frame(vis$edges, directed = FALSE, vertices = vis$nodes)
-#'     ggraph(graph, layout = 'graphopt') +
-#'         geom_edge_link(aes(start_cap = label_rect(node1.name),
-#'                            end_cap = label_rect(node2.name))) +
-#'         geom_node_text(label = vis$nodes$label) +
-#'         theme_void()
-#' }
+# #' plotAHN
+# #'
+# #' @param ahn a list produced from the \link{fit} function.
+# #'
+# #' @return visualization of the AHN.
+# #' @export
+# #'
+# #' @examples
+# #' # Create data
+# #' x <- 2 * runif(1000) - 1;
+# #' x <- sort(x)
+# #'
+# #' y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) +
+# #'     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) +
+# #'     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
+# #'
+# #' # Create Sigma list
+# #' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
+# #'
+# #' # Train AHN
+# #' ahn <- fit(Sigma, 5, 0.01, 500)
+# #'
+# #' # Plot AHN
+# #' plotAHN(ahn)
+# #'
+# plotAHN <- function(ahn) {
+#     vis <- CreateNodesEdges(ahn)
+#     graph <- igraph::graph_from_data_frame(vis$edges, directed = FALSE, vertices = vis$nodes)
+#     ggraph(graph, layout = 'graphopt') +
+#         geom_edge_link(aes(start_cap = label_rect(node1.name),
+#                            end_cap = label_rect(node2.name))) +
+#         geom_node_text(label = vis$nodes$label) +
+#         theme_void()
+# }
 
-
-#' Plot Artificial Hydrocarbon Network
-#'
-#' @description Plot method for objects of class \code{ahn}.
-#'
-#' @param x an object of class "\code{ahn}" produced from the \link{AHNnD} function.
-#' @param ... further arguments passed to visNetwork functions.
-#'
-#' @return dynamic visualization of the AHN.
-#' @export
-#'
-#' @examples
-#' # Create data
-#' x <- 2 * runif(1000) - 1;
-#' x <- sort(x)
-#'
-#' y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) +
-#'     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) +
-#'     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
-#'
-#' # Create Sigma list
-#' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
-#'
-#' # Train AHN
-#' ahn <- AHNnD(Sigma, 5, 0.01, 500)
-#'
-#' # Plot AHN
-#' plot(ahn)
-plot.ahn <- function(x, ...) {
-    vis <- CreateNodesEdges(x)
-    visNetwork(vis$nodes, vis$edges, width = "100%", ...) %>%
-        visGroups(groupname = "C", color = "#fbb4ae", ...) %>%
-        visGroups(groupname = "H1", color = "#b3cde3", ...) %>%
-        visGroups(groupname = "H2", color = "#ccebc5", ...) %>%
-        visGroups(groupname = "H3", color = "#decbe4", ...) %>%
-        visLegend(position = "right", main = "Legend", ...)
-}
 
 #' Summary Artificial Hydrocarbon Network
 #'
 #' @description Summary method for objects of class \code{ahn}.
 #'
-#' @param object an object of class "\code{ahn}" produced from the \link{AHNnD} function.
+#' @param x an object of class "\code{ahn}" produced from the \link{fit} function.
 #' @param ... further arguments passed to or from other methods.
 #'
 #' @return summary description of the AHN.
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # Create data
 #' x <- 2 * runif(1000) - 1;
 #' x <- sort(x)
@@ -293,13 +226,16 @@ plot.ahn <- function(x, ...) {
 #' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
 #'
 #' # Train AHN
-#' ahn <- AHNnD(Sigma, 5, 0.01, 500)
+#' ahn <- fit(Sigma, 5, 0.01, 500)
 #'
 #' # Summary AHN
 #' summary(ahn)
-summary.ahn <- function(object, ...) {
-    stopifnot(is.ahn(object))
-    ahn <- object
+#' }
+#'
+summary.ahn <- function(x, ...) {
+    stopifnot(is.ahn(x))
+    ahn <- x
+
     cat("\nArtificial Hydrocarbon Network trained:\n\n")
     cat("Number of molecules:\n", ahn$network$n, "\n\n")
     cat("Learning factor:\n", ahn$eta, "\n\n")
@@ -315,3 +251,123 @@ summary.ahn <- function(object, ...) {
     CreateTable(ahn)
 }
 
+
+#' predict
+#'
+#' @description Function to simulate a trained Artificial Hydrocarbon Network.
+#'
+#' @param x an object of class "\code{ahn}" produced from the \link{fit} function.
+#' @param new_data a data frame with the inputs to be predicted.
+#' @param ... further arguments passed to or from other methods.
+#'
+#' @return predicted output values for inputs in \code{new_data}.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Create data
+#' x <- 2 * runif(1000) - 1;
+#' x <- sort(x)
+#'
+#' y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) +
+#'     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) +
+#'     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
+#'
+#' # Create Sigma list
+#' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
+#'
+#' # Train AHN
+#' ahn <- fit(Sigma, 5, 0.01, 500)
+#'
+#' # Test AHN
+#' X <- data.frame(x = x)
+#' ysim <- predict(ahn, X)
+#' }
+#'
+predict.ahn <- function(x, new_data, ...) {
+    # Security Checking
+    stopifnot(is.ahn(x))
+    ahn <- x
+
+    if (!is.data.frame(new_data)) {
+        stop("new_data must be a data frame with the predictor variables. ", call. = FALSE)
+    }
+
+    # Extract network components
+    H <- ahn$network$H
+    posMolecules <- ahn$network$Pi
+    C <- ahn$network$C
+
+    # Initial statemets
+    Yapprox <- matrix(0, nrow = nrow(new_data), ncol = max(unlist(sapply(H, ncol))))
+    indexes <- rep(0, nrow(new_data))
+
+    # Distribute data over molecules
+    molecules <- SimDataInMolecules(new_data, posMolecules)
+
+    # Evaluate AHN-model
+    pointer <- 1
+
+    for (i in seq_len(length(molecules$X))) {
+        Xi <- molecules$X[[i]]
+        indexesi <- molecules$Index[[i]]
+
+        ki <- C$Omega[i]
+        Phi <- CH_X(Xi, ki)
+
+        if (is.null(H[[i]])) {next}
+
+        Ym <- Phi %*% H[[i]]
+
+        pointerNew <- pointer + nrow(Ym)
+        Yapprox[pointer:(pointerNew-1), ] <- Ym#[seq_len(nrow(Ym)), ]
+        indexes[pointer:(pointerNew-1)] <- indexesi
+        pointer <- pointerNew
+    }
+
+    # Sort data
+    ix <- sort(indexes, index.return = TRUE)$ix;
+    Y <- Yapprox[ix, ]
+}
+
+
+#' Plot Artificial Hydrocarbon Network
+#'
+#' @description Plot method for objects of class \code{ahn}.
+#'
+#' @param x an object of class "\code{ahn}" produced from the \link{fit} function.
+#' @param ... further arguments passed to visNetwork functions.
+#'
+#' @return dynamic visualization of the AHN.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Create data
+#' x <- 2 * runif(1000) - 1;
+#' x <- sort(x)
+#'
+#' y <- (x < 0.1) * (0.05 * runif(100) + atan(pi*x)) +
+#'     (x >= 0.1 & x < 0.6) * (0.05 * runif(1000) + sin(pi*x)) +
+#'     (x >= 0.6) * (0.05 * runif(1000) + cos(pi*x))
+#'
+#' # Create Sigma list
+#' Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
+#'
+#' # Train AHN
+#' ahn <- fit(Sigma, 5, 0.01, 500)
+#'
+#' # Plot AHN
+#' plot(ahn)
+#' }
+#'
+plot.ahn <- function(x, ...) {
+    stopifnot(is.ahn(x))
+    vis <- CreateNodesEdges(x)
+    visNetwork(vis$nodes, vis$edges, width = "100%", ...) %>%
+        visGroups(groupname = "C", color = "#fbb4ae", ...) %>%
+        visGroups(groupname = "H1", color = "#b3cde3", ...) %>%
+        visGroups(groupname = "H2", color = "#ccebc5", ...) %>%
+        visGroups(groupname = "H3", color = "#decbe4", ...) %>%
+        visLegend(position = "right", main = "Legend", ...)
+}

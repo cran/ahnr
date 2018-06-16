@@ -1,8 +1,8 @@
-## ----Example 1 Training--------------------------------------------------
+## ----Example_1_Training, fig.width=7, fig.asp = .62----------------------
 library(ahnr)
 
 # Create data
-set.seed(12321)
+set.seed(123)
 x <- 2 * runif(1000) - 1;
 x <- sort(x)
 
@@ -16,26 +16,26 @@ plot(x, y, type = 'l')
 Sigma <- list(X = data.frame(x = x), Y = data.frame(y = y))
 
 # Create network
-ahn <- AHNnD(Sigma, 5, 0.01, 100)
+ahn <- fit(Sigma, 4, 0.01, 2000)
 
-## ----Example 1 Simulation------------------------------------------------
+## ----Example_1_Simulation, fig.width=7, fig.asp = .62--------------------
 # Create test data
 X <- data.frame(x = x)
 
 # Simulate
-ysim <- SimAHNnD(ahn, X)
+ysim <- predict(ahn, X)
 
 plot(x, y, type = 'l')
-lines(x, ysim, type = 'l', col = 'red')
-legend(-1, 1, c('Original', 'Simulation'), col = c(1,2), lty = c(1,3), cex = 0.8)
+lines(x, ysim, type = 'l', lty = 2, col = 'red')
+legend(-1, 1, c('Original', 'Simulation'), col = c(1,2), lty = c(1,2), cex = 0.8)
 
-## ----Example 1 Summary---------------------------------------------------
+## ----Example_1_Summary---------------------------------------------------
 summary(ahn)
 
-## ----Example 1 Network Visualization-------------------------------------
+## ----Example_1_Network_Visualization-------------------------------------
 plot(ahn)
 
-## ----Example 2 Training and Simulation-----------------------------------
+## ----Example_2_Training_and_Simulation, fig.width=7, fig.asp = .62-------
 # Create data
 set.seed(12321)
 t <- seq(0, 15, 0.01)
@@ -46,18 +46,18 @@ Y <- data.frame(y = sin(t))
 Sigma <- list(X = X, Y = Y)
 
 # Create network
-ahn <- AHNnD(Sigma, 5, 0.01, 100)
+ahn <- fit(Sigma, 5, 0.01, 2000)
 
 # Simulate
-ysim <- SimAHNnD(ahn, X)
+ysim <- predict(ahn, X)
 
-plot(t, Y$y, type = 'l', col = 'black', xlab = 't', ylab = 'output')
-lines(t, ysim, col = 'red')
-legend(0, -0.5, c('Original', 'Simulation'), col = c(1,2), lty = c(1,3), cex = 0.6)
+plot(t, Y$y, type = 'l', col = 'black', xlab = 't', ylab = 'y')
+lines(t, ysim, type = 'l', lty = 2, col = 'red')
+legend(0, -0.5, c('Original', 'Simulation'), col = c(1,2), lty = c(1,2), cex = 0.6)
 
-## ----Example 2 Summary---------------------------------------------------
+## ----Example_2_Summary---------------------------------------------------
 summary(ahn)
 
-## ----Example 2 Network Visualization-------------------------------------
+## ----Example_2_Network_Visualization-------------------------------------
 plot(ahn)
 
