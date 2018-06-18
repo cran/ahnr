@@ -206,7 +206,7 @@ is.ahn <- function(x) inherits(x, "ahn")
 #'
 #' @description Summary method for objects of class \code{ahn}.
 #'
-#' @param x an object of class "\code{ahn}" produced from the \link{fit} function.
+#' @param object an object of class "\code{ahn}" produced from the \link{fit} function.
 #' @param ... further arguments passed to or from other methods.
 #'
 #' @return summary description of the AHN.
@@ -232,9 +232,9 @@ is.ahn <- function(x) inherits(x, "ahn")
 #' summary(ahn)
 #' }
 #'
-summary.ahn <- function(x, ...) {
-    stopifnot(is.ahn(x))
-    ahn <- x
+summary.ahn <- function(object, ...) {
+    stopifnot(is.ahn(object))
+    ahn <- object
 
     cat("\nArtificial Hydrocarbon Network trained:\n\n")
     cat("Number of molecules:\n", ahn$network$n, "\n\n")
@@ -256,11 +256,10 @@ summary.ahn <- function(x, ...) {
 #'
 #' @description Function to simulate a trained Artificial Hydrocarbon Network.
 #'
-#' @param x an object of class "\code{ahn}" produced from the \link{fit} function.
-#' @param new_data a data frame with the inputs to be predicted.
+#' @param object an object of class "\code{ahn}" produced from the \link{fit} function.
 #' @param ... further arguments passed to or from other methods.
 #'
-#' @return predicted output values for inputs in \code{new_data}.
+#' @return predicted output values for inputs in \code{newdata}.
 #' @export
 #'
 #' @examples
@@ -284,13 +283,16 @@ summary.ahn <- function(x, ...) {
 #' ysim <- predict(ahn, X)
 #' }
 #'
-predict.ahn <- function(x, new_data, ...) {
+predict.ahn <- function(object, ...) {
     # Security Checking
-    stopifnot(is.ahn(x))
-    ahn <- x
+    stopifnot(is.ahn(object))
+    ahn <- object
 
-    if (!is.data.frame(new_data)) {
-        stop("new_data must be a data frame with the predictor variables. ", call. = FALSE)
+    dots <- list(...)
+    newdata <- dots[[1]]
+
+    if (!is.data.frame(newdata)) {
+        stop("newdata must be a data frame with the predictor variables. ", call. = FALSE)
     }
 
     # Extract network components
@@ -299,11 +301,11 @@ predict.ahn <- function(x, new_data, ...) {
     C <- ahn$network$C
 
     # Initial statemets
-    Yapprox <- matrix(0, nrow = nrow(new_data), ncol = max(unlist(sapply(H, ncol))))
-    indexes <- rep(0, nrow(new_data))
+    Yapprox <- matrix(0, nrow = nrow(newdata), ncol = max(unlist(sapply(H, ncol))))
+    indexes <- rep(0, nrow(newdata))
 
     # Distribute data over molecules
-    molecules <- SimDataInMolecules(new_data, posMolecules)
+    molecules <- SimDataInMolecules(newdata, posMolecules)
 
     # Evaluate AHN-model
     pointer <- 1
@@ -331,9 +333,9 @@ predict.ahn <- function(x, new_data, ...) {
 }
 
 
-#' Plot Artificial Hydrocarbon Network
+#' Visualize Artificial Hydrocarbon Network
 #'
-#' @description Plot method for objects of class \code{ahn}.
+#' @description Visualize method for objects of class \code{ahn}.
 #'
 #' @param x an object of class "\code{ahn}" produced from the \link{fit} function.
 #' @param ... further arguments passed to visNetwork functions.
@@ -357,11 +359,11 @@ predict.ahn <- function(x, new_data, ...) {
 #' # Train AHN
 #' ahn <- fit(Sigma, 5, 0.01, 500)
 #'
-#' # Plot AHN
-#' plot(ahn)
+#' # Visualize AHN
+#' visualize(ahn)
 #' }
 #'
-plot.ahn <- function(x, ...) {
+visualize <- function(x, ...) {
     stopifnot(is.ahn(x))
     vis <- CreateNodesEdges(x)
     visNetwork(vis$nodes, vis$edges, width = "100%", ...) %>%

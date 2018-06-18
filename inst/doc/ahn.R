@@ -33,7 +33,7 @@ legend(-1, 1, c('Original', 'Simulation'), col = c(1,2), lty = c(1,2), cex = 0.8
 summary(ahn)
 
 ## ----Example_1_Network_Visualization-------------------------------------
-plot(ahn)
+visualize(ahn)
 
 ## ----Example_2_Training_and_Simulation, fig.width=7, fig.asp = .62-------
 # Create data
@@ -59,5 +59,5 @@ legend(0, -0.5, c('Original', 'Simulation'), col = c(1,2), lty = c(1,2), cex = 0
 summary(ahn)
 
 ## ----Example_2_Network_Visualization-------------------------------------
-plot(ahn)
+visualize(ahn)
 
